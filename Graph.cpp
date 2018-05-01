@@ -147,7 +147,7 @@ List<int> Graph::getAllVerticesAdjacentTo(int theVertex) const
 
 void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCost) const
 {
-    if(cap < numOfVertices - 1)
+    if(cap < numOfVertices)
     {
         cout << "Cap is to short" << endl;
     }
@@ -254,5 +254,3 @@ void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCos
         }
     }
 }
-
-

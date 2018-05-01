@@ -56,7 +56,8 @@ int main()
     }*/
 
 
-    int totalCost, length = 7;
+    int totalCost = 0, length = 7;
+
     List<AdjacencyInfo> *mst = new List<AdjacencyInfo>[length];
     graph->minSpanTree(mst, length, totalCost);
     cout << endl << "###################" << endl;
