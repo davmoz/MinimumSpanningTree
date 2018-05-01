@@ -56,18 +56,21 @@ int main()
     }*/
 
 
-    int totalCost = 0, length = 7;
+    int totalCost, length = 7;
     List<AdjacencyInfo> *mst = new List<AdjacencyInfo>[length];
     graph->minSpanTree(mst, length, totalCost);
-    cout << "#################################" << endl;
+    cout << endl << "###################" << endl;
     for (int i = 0; i < length; i++)
     {
-        cout << "[" << i + 1 << "]" << "Node: " << mst[i].getAt(0).getNeighbourVertex();
-        cout << " Weight: " << mst[i].getAt(0).getArcWeight() << endl;
+        for (int j = 0; j < mst[i].length(); j++)
+        {
+            cout << "[" << i << "]" << "->[" << mst[i].getAt(j).getNeighbourVertex();
+            cout << "] Weight: " << mst[i].getAt(j).getArcWeight() << endl;
+        }
     }
-    cout << "#################################" << endl;
+    cout << "###################" << endl;
     cout << "Total: " << totalCost << endl;
-    cout << "#################################" << endl;
+    cout << "###################" << endl;
 
     delete[] mst;
     delete graph;

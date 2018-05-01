@@ -62,7 +62,7 @@ bool Graph::addArc(int sourceVertex, int destinationVertex, int arcWeight)
 
 void Graph::printGraph() const
 {
-    string type = "";
+    string type;
     if(graphType == 0)
     {
         type = "Directed";
@@ -153,78 +153,104 @@ void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCos
     }
     else
     {
-        bool known[cap] {false};
-        int cost[cap] {numeric_limits<int>::max()};
-        int pV[cap] {-1};
+        bool known[cap];
+        int cost[cap];
+        int pV[cap];
+        AdjacencyInfo temp;
 
-        string nodeKnown;
-        int startNode = 0;
+        for (int k = 0; k < cap; k++)
+        {
+            cost[k] = numeric_limits<int>::max();
+            pV[k] = -1;
+            known[k] = false;
+        }
+
+        string vertexState;
+
+        int indexOfLowestCost = 0;
+        int lowestCost = 0;
+        known[0] = true;
+        totalCost = 0;
+
+        int currentVertex = 0;
+
+        List<int> vertexNeighbours;
+        int vertex = 0;
         int arcWeight = 0;
+
         int counter = 0;
-        int smallest = cost[0];
-        int destinationNode = 0;
-
-        // Start with Node 0
-        known[startNode] = true;
-        cost[startNode] = 0;
-
-        List<int> tempList;
-
-        int tempNode = 0;
-
-        AdjacencyInfo nodeDone = AdjacencyInfo(destinationNode, arcWeight);
-        minSpanTree[counter].insertAt(0, nodeDone);
-
         while(counter < numOfVertices - 1)
         {
-            for (int k = 0; k < list[startNode].length(); k++)
-            {
-                arcWeight = list[startNode].getAt(k).getArcWeight();
-                cost[list[startNode].getAt(k).getNeighbourVertex()] = arcWeight;
-            }
-
-            tempList = getAllVerticesAdjacentTo(startNode);
-            cout << "#################################" << endl;
-            cout << "[Neighbours or node " << startNode << "]" << endl;
-            for (int i = 1; i < tempList.length(); i++)
-            {
-                tempNode = tempList.getAt(i);
-                cout << "temp: " << tempNode << " Cost: " << cost[tempNode];
-                if(cost[tempNode] < smallest && !known[tempNode])
-                {
-                    smallest = cost[tempNode];
-                    destinationNode = tempNode;
-                }
-                cout << endl;
-            }
-
             cout << endl;
-            cout << "From: " << startNode << endl;
-            cout << "Dest: " << destinationNode << endl;
-            cout << "Cost: " << smallest << endl;
-            cout << "#################################" << endl;
 
-            counter++;
-            AdjacencyInfo nodeDone = AdjacencyInfo(destinationNode, smallest);
-            minSpanTree[counter].insertAt(0, nodeDone);
+            lowestCost = numeric_limits<int>::max();
 
-            pV[destinationNode] = startNode;
-            startNode = destinationNode;
-            totalCost += smallest;
-            known[startNode] = true;
-            smallest = numeric_limits<int>::max();
+            vertexNeighbours = getAllVerticesAdjacentTo(currentVertex);
 
+            for (int i = 0; i < vertexNeighbours.length(); i++)
+            {
+                vertex = vertexNeighbours.getAt(i);
+                arcWeight = list[currentVertex].getAt(i).getArcWeight();
+                cost[vertex] = arcWeight;
+            }
+            cout << "###################################################" << endl;
+            for (int k = 0; k < cap; k++)
+            {
+                if(known[k])
+                {
 
+                    vertexNeighbours = getAllVerticesAdjacentTo(k);
+                    cout << "At: " << k << endl;
+                    for (int i = 0; i < vertexNeighbours.length(); i++)
+                    {
+                        vertex = vertexNeighbours.getAt(i); // Gets the node (ex 1, 2, 3)
+                        arcWeight = list[k].getAt(i).getArcWeight();
+
+                        if(arcWeight < lowestCost && !known[vertex])
+                        {
+                            cout << i << ") Cost From: " << k << " To: " << vertex << " -> " << arcWeight << endl;
+                            lowestCost = arcWeight;
+                            indexOfLowestCost = vertex;
+                            currentVertex = k;
+                        }
+                        else if(known[vertex])
+                        {
+                            cout << i << ") Cost From: " << k << " To: " << vertex << " -> " << arcWeight << " [Path taken]" << endl;
+                        }
+                        else
+                        {
+                            cout << i << ") Cost From: " << k << " To: " << vertex << " -> " << arcWeight << endl;
+                        }
+                    }
+
+                    cout << "[LOWEST: " << currentVertex << "->" << indexOfLowestCost << "] Cost: " << lowestCost << endl;
+                    cout << "--" << endl;
+                }
+            }
+            cout << "¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤" << endl;
+            cout << "[FINAL] From: " << currentVertex << " To: " << indexOfLowestCost << " Lowest Cost: " << lowestCost << endl;
+            cout << to_string(totalCost) << " + " << to_string(lowestCost) << " = " << to_string(totalCost + lowestCost) << endl;
+            cout << "¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤" << endl;
+
+            temp = AdjacencyInfo(indexOfLowestCost, lowestCost);
+            minSpanTree[currentVertex].insertAt(0, temp);
+
+            known[indexOfLowestCost] = true;
+            pV[indexOfLowestCost] = currentVertex;
+            currentVertex = indexOfLowestCost;
+            totalCost += lowestCost;
 
 
             for (int j = 0; j < cap; j++)
             {
                 if (known[j])
-                    nodeKnown = "T";
+                    vertexState = "T";
                 else
-                    nodeKnown = "F";
-                cout << "V: " << j << " Known: " << nodeKnown << " Weight: " << cost[j] << " pV: " << pV[j] << endl;
+                    vertexState = "F";
+                cout << "V: " << j << " Known: " << vertexState << " Weight: " << cost[j] << " pV: " << pV[j] << endl;
             }
+            cout << "###################################################" << endl;
+            counter++;
         }
     }
 }
