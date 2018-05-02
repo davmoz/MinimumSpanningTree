@@ -35,8 +35,8 @@ bool Graph::addArc(int sourceVertex, int destinationVertex, int arcWeight)
 {
     bool exists = true;
 
-    if(sourceVertex < 0 || sourceVertex > numOfVertices ||
-       destinationVertex < 0 || destinationVertex > numOfVertices)
+    if(sourceVertex < 0 || sourceVertex >= numOfVertices ||
+       destinationVertex < 0 || destinationVertex >= numOfVertices)
     {
         exists = false;
     }
@@ -53,10 +53,6 @@ bool Graph::addArc(int sourceVertex, int destinationVertex, int arcWeight)
             list[sourceVertex].insertAt(0, temp);
         }
     }
-    else
-    {
-        cout << "Does not exist" << endl;
-    }
     return exists;
 }
 
@@ -71,7 +67,6 @@ void Graph::printGraph() const
     {
         type = "Undirected";
     }
-    cout << endl << "#################################" << endl;
     cout << "Vertices: " << numOfVertices << endl;
     cout << "Type: " << type << endl;
     for (int i = 0; i < numOfVertices; i++)
@@ -84,7 +79,6 @@ void Graph::printGraph() const
         }
         cout << endl;
     }
-    cout << "#################################" << endl;
 }
 
 int Graph::outDegreeOfVertex(int theVertex) const
@@ -116,12 +110,21 @@ void Graph::reset(int nrOfVert, GraphType graphType)
 
 bool Graph::hasArc(int sourceVertex, int destinationVertex) const
 {
-    // Quadratic
     bool arcExists = false;
-    for (int i = 0; i < list[sourceVertex].length() && !arcExists; i++)
+    bool verticesInRange = true;
+    if(sourceVertex < 0 || sourceVertex >= numOfVertices||
+       destinationVertex < 0 || destinationVertex >= numOfVertices)
     {
-        if(list[sourceVertex].getAt(i).getNeighbourVertex() == destinationVertex)
-            arcExists = true;
+        verticesInRange = false;
+    }
+
+    if(verticesInRange)
+    {
+        for (int i = 0; i < list[sourceVertex].length() && !arcExists; i++)
+        {
+            if(list[sourceVertex].getAt(i).getNeighbourVertex() == destinationVertex)
+                arcExists = true;
+        }
     }
     return arcExists;
 }
@@ -129,9 +132,26 @@ bool Graph::hasArc(int sourceVertex, int destinationVertex) const
 bool Graph::removeArc(int sourceVertex, int destinationVertex, int arcWeight)
 {
     // Need error handling for vertex ranges
+    bool arcExists = hasArc(sourceVertex, destinationVertex);
     bool removed = false;
-    AdjacencyInfo temp = AdjacencyInfo(destinationVertex, arcWeight);
-    removed = list[sourceVertex].removeElement(temp);
+
+    if(!arcExists)
+    {
+
+    }
+    else if(graphType == DIRECTED)
+    {
+        AdjacencyInfo temp = AdjacencyInfo(destinationVertex, arcWeight);
+        removed = list[sourceVertex].removeElement(temp);
+    }
+    else if(graphType == UNDIRECTED)
+    {
+        AdjacencyInfo temp = AdjacencyInfo(destinationVertex, arcWeight);
+        removed = list[sourceVertex].removeElement(temp);
+
+        temp = AdjacencyInfo(sourceVertex, arcWeight);
+        removed = list[destinationVertex].removeElement(temp);
+    }
     return removed;
 }
 
@@ -147,9 +167,9 @@ List<int> Graph::getAllVerticesAdjacentTo(int theVertex) const
 
 void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCost) const
 {
-    if(cap < numOfVertices)
+    if(cap < numOfVertices || graphType == DIRECTED)
     {
-        cout << "Cap is to short" << endl;
+        throw "Cap is not enough! OR The graph is DIRECTED";
     }
     else
     {
@@ -157,6 +177,7 @@ void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCos
         int cost[cap];
         int pV[cap];
         AdjacencyInfo temp;
+        string vertexState;
 
         for (int k = 0; k < cap; k++)
         {
@@ -165,12 +186,11 @@ void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCos
             known[k] = false;
         }
 
-        string vertexState;
+        known[0] = true;
+        totalCost = 0;
 
         int indexOfLowestCost = 0;
         int lowestCost = 0;
-        known[0] = true;
-        totalCost = 0;
 
         int currentVertex = 0;
 
@@ -181,8 +201,6 @@ void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCos
         int counter = 0;
         while(counter < numOfVertices - 1)
         {
-            cout << endl;
-
             lowestCost = numeric_limits<int>::max();
 
             vertexNeighbours = getAllVerticesAdjacentTo(currentVertex);
@@ -193,12 +211,11 @@ void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCos
                 arcWeight = list[currentVertex].getAt(i).getArcWeight();
                 cost[vertex] = arcWeight;
             }
-            cout << "###################################################" << endl;
+            cout << "##########################################" << endl;
             for (int k = 0; k < cap; k++)
             {
                 if(known[k])
                 {
-
                     vertexNeighbours = getAllVerticesAdjacentTo(k);
                     cout << "At: " << k << endl;
                     for (int i = 0; i < vertexNeighbours.length(); i++)
@@ -227,10 +244,10 @@ void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCos
                     cout << "--" << endl;
                 }
             }
-            cout << "¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤" << endl;
+            cout << "------------------------------------------" << endl;
             cout << "[FINAL] From: " << currentVertex << " To: " << indexOfLowestCost << " Lowest Cost: " << lowestCost << endl;
             cout << to_string(totalCost) << " + " << to_string(lowestCost) << " = " << to_string(totalCost + lowestCost) << endl;
-            cout << "¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤" << endl;
+            cout << "------------------------------------------" << endl;
 
             temp = AdjacencyInfo(indexOfLowestCost, lowestCost);
             minSpanTree[currentVertex].insertAt(0, temp);
@@ -249,7 +266,7 @@ void Graph::minSpanTree(List<AdjacencyInfo> *minSpanTree, int cap, int &totalCos
                     vertexState = "F";
                 cout << "V: " << j << " Known: " << vertexState << " Weight: " << cost[j] << " pV: " << pV[j] << endl;
             }
-            cout << "###################################################" << endl;
+            cout << "##########################################" << endl;
             counter++;
         }
     }
